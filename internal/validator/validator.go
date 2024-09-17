@@ -1,9 +1,12 @@
 package validator
 
 import (
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
+
+var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$")
 
 // Define a new Validator type which contains a map of validation errors for our
 // form fields.
@@ -18,7 +21,7 @@ func (v *Validator) Valid() bool {
 
 // AddFieldError() adds an error message to the FieldErrors map (so long as no
 // entry already exists for the given key).
-func (v *Validator) AddError(key, message string) {
+func (v *Validator) AddFieldError(key, message string) {
 	// Note: We need to initialize the map first, if it isn't already
 	// initialized.
 	if v.FieldErrors == nil {
@@ -34,7 +37,7 @@ func (v *Validator) AddError(key, message string) {
 // validation check is not 'ok'
 func (v *Validator) CheckField(ok bool, key string, message string) {
 	if !ok {
-		v.AddError(key, message)
+		v.AddFieldError(key, message)
 	}
 }
 
@@ -56,4 +59,12 @@ func PermittedInt(value int, permittedValues ...int) bool {
 		}
 	}
 	return false
+}
+
+func MinChars(value string, n int) bool {
+	return utf8.RuneCountInString(value) >= n
+}
+
+func Matches(value string, rx *regexp.Regexp) bool {
+	return rx.MatchString(value)
 }
